@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026 提问式阅读共读书目</title>
+  <style>
+    :root {
+      --ink: #17191d;
+      --muted: #666b73;
+      --paper: #f7f4ee;
+      --panel: #fffdf8;
+      --line: #ddd6ca;
+      --red: #d91f2c;
+      --red-dark: #981521;
+      --black: #20242b;
+      --gold: #b78b3a;
+      --green: #2b6f5b;
+      --shadow: 0 24px 70px rgba(32, 36, 43, .14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(183, 139, 58, .08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(183, 139, 58, .07) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      color: var(--ink);
+      font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, serif;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(1520px, calc(100vw - 36px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(247, 244, 238, .92);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 230px;
+      font-weight: 900;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      background: var(--red);
+      color: #fff;
+      border-radius: 6px;
+      box-shadow: 7px 7px 0 var(--black);
+      font-family: Georgia, serif;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .brand span:last-child {
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+      gap: 30px;
+      align-items: end;
+      padding: 44px 0 28px;
+      min-height: 360px;
+    }
+
+    h1 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(38px, 7vw, 100px);
+      line-height: .94;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 720px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 30px;
+      max-width: 720px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, .86);
+      padding: 16px;
+      box-shadow: 9px 9px 0 rgba(32, 36, 43, .08);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .source {
+      position: relative;
+      align-self: stretch;
+      min-height: 330px;
+      border: 1px solid var(--black);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--black);
+      box-shadow: var(--shadow);
+    }
+
+    .source img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      filter: saturate(.98) contrast(1.02);
+      transform: scale(1.01);
+    }
+
+    .source-label {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: rgba(255, 253, 248, .92);
+      color: var(--black);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto auto;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0 18px;
+    }
+
+    .search {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0 15px;
+      font: 700 15px/1.2 "Noto Serif SC", "Songti SC", serif;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(183, 139, 58, .16);
+    }
+
+    .select-wrap,
+    .count-pill {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    select {
+      height: 44px;
+      min-width: 190px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      padding: 0 36px 0 12px;
+      font: 800 14px/1 "Noto Serif SC", "Songti SC", serif;
+      outline: none;
+    }
+
+    .count-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .table-frame {
+      margin-bottom: 52px;
+      border: 1px solid var(--black);
+      border-radius: 8px;
+      overflow: auto;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1180px;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 65px;
+      z-index: 10;
+      background: var(--black);
+      color: #fff;
+      border-bottom: 1px solid #000;
+      padding: 14px 14px;
+      text-align: left;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      border-bottom: 1px solid var(--line);
+      padding: 14px;
+      vertical-align: top;
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    tbody tr:nth-child(2n) {
+      background: rgba(32, 36, 43, .025);
+    }
+
+    tbody tr:hover {
+      background: rgba(183, 139, 58, .12);
+    }
+
+    .unit {
+      min-width: 122px;
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .unit.u1,
+    .unit.u4,
+    .unit.u7,
+    .unit.u10 {
+      background: #fff;
+      color: var(--black);
+    }
+
+    .unit.u2,
+    .unit.u5,
+    .unit.u8 {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .unit.u3,
+    .unit.u6,
+    .unit.u9 {
+      background: var(--black);
+      color: #fff;
+    }
+
+    .week {
+      white-space: nowrap;
+      font-weight: 900;
+      color: var(--red-dark);
+    }
+
+    .date {
+      white-space: nowrap;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .book-title {
+      display: block;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.38;
+    }
+
+    .author {
+      min-width: 150px;
+      font-weight: 800;
+      color: var(--black);
+    }
+
+    .summary {
+      min-width: 360px;
+      color: #353941;
+    }
+
+    .links {
+      min-width: 210px;
+    }
+
+    .link-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .link-row a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      padding: 5px 10px;
+      color: var(--black);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .link-row a:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .empty {
+      padding: 42px 18px;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    footer {
+      padding: 0 0 42px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        width: min(100vw - 24px, 900px);
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 30px;
+      }
+
+      .source {
+        max-height: 460px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      select,
+      .count-pill {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar-inner {
+        min-height: 58px;
+      }
+
+      .brand span:last-child {
+        font-size: 15px;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+
+      .hero-copy {
+        font-size: 16px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#book-table" aria-label="跳到书目表格">
+        <span class="brand-mark">?</span>
+        <span>提问式阅读</span>
+      </a>
+      <div class="count-pill" id="navCount">40 本书</div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">2026 共读书目</h1>
+        <p class="hero-copy">从财富、系统、创业、工作方式到管理和人生哲学，按 10 个单元整理成可搜索表格。每本书附简要介绍和外部阅读入口。</p>
+        <div class="stats" aria-label="书单概览">
+          <div class="stat"><strong id="bookTotal">40</strong><span>正式阅读书目</span></div>
+          <div class="stat"><strong>10</strong><span>主题单元</span></div>
+          <div class="stat"><strong>2026</strong><span>1 月至 12 月</span></div>
+        </div>
+      </div>
+      <figure class="source">
+        <img src="assets/source-reading-list.png" alt="原始图片中的 2026 提问式阅读共读书目">
+        <figcaption class="source-label">原图对照</figcaption>
+      </figure>
+    </section>
+
+    <section id="book-table" aria-label="书目表格">
+      <div class="controls">
+        <input class="search" id="searchInput" type="search" placeholder="搜索书名、作者、主题或简介" aria-label="搜索书目">
+        <div class="select-wrap">
+          <select id="unitFilter" aria-label="按单元筛选">
+            <option value="all">全部单元</option>
+          </select>
+        </div>
+        <div class="count-pill" id="resultCount">40 本</div>
+      </div>
+
+      <div class="table-frame">
+        <table>
+          <thead>
+            <tr>
+              <th>单元</th>
+              <th>周次</th>
+              <th>开始日期</th>
+              <th>书名</th>
+              <th>作者</th>
+              <th>简要介绍</th>
+              <th>书评 / 介绍入口</th>
+            </tr>
+          </thead>
+          <tbody id="bookRows"></tbody>
+        </table>
+        <div class="empty" id="emptyState" hidden>没有匹配的书目。</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    书名、作者与日期根据用户提供的图片整理；外链为检索入口，便于查看不同版本的介绍、评分与读者评论。
+  </footer>
+
+  <script>
+    const books = [
+      {
+        unitNo: 1,
+        unit: "第一单元：提前醒来",
+        week: "第1周",
+        date: "2026-01-04",
+        displayDate: "1月4日",
+        title: "百万富翁快车道",
+        author: "MJ·德马科",
+        summary: "从创业者视角拆解财富积累路径，强调把收入与时间脱钩、构建可扩展系统，而不是只依赖节俭和线性工资。"
+      },
+      {
+        unitNo: 1,
+        unit: "第一单元：提前醒来",
+        week: "第2周",
+        date: "2026-01-11",
+        displayDate: "1月11日",
+        title: "金钱心理学",
+        author: "摩根·豪泽尔",
+        summary: "用短篇故事解释财富、风险、复利和行为偏差，核心是金钱决策往往由经历、情绪和耐心共同塑造。"
+      },
+      {
+        unitNo: 1,
+        unit: "第一单元：提前醒来",
+        week: "第3周",
+        date: "2026-01-18",
+        displayDate: "1月18日",
+        title: "稀缺",
+        author: "塞德希尔·穆来纳森",
+        summary: "研究时间、金钱和注意力不足如何占用认知带宽，解释贫困、拖延和短视选择背后的心理机制。"
+      },
+      {
+        unitNo: 1,
+        unit: "第一单元：提前醒来",
+        week: "第4周",
+        date: "2026-01-25",
+        displayDate: "1月25日",
+        title: "邻家的百万富翁",
+        author: "托马斯·斯坦利",
+        summary: "通过大量调研呈现真实富裕家庭的消费、储蓄和职业习惯，提醒财富更常来自纪律和长期积累。"
+      },
+      {
+        unitNo: 2,
+        unit: "第二单元：重构系统",
+        week: "第6周",
+        date: "2026-02-08",
+        displayDate: "2月8日",
+        title: "随机漫步的傻瓜",
+        author: "纳西姆·塔勒布",
+        summary: "讨论随机性、幸存者偏差和过度自信，帮助读者识别运气被误认为能力时造成的判断错误。"
+      },
+      {
+        unitNo: 2,
+        unit: "第二单元：重构系统",
+        week: "第7周",
+        date: "2026-02-15",
+        displayDate: "2月15日",
+        title: "人生的智慧",
+        author: "阿图尔·叔本华",
+        summary: "从幸福、欲望、独处和名誉等主题切入，呈现一种清醒而克制的人生哲学。"
+      },
+      {
+        unitNo: 2,
+        unit: "第二单元：重构系统",
+        week: "第8周",
+        date: "2026-02-22",
+        displayDate: "2月22日",
+        title: "为什么10倍增长比2倍更容易",
+        author: "丹·苏利文",
+        summary: "主张用更高目标迫使系统重构，聚焦少数高杠杆动作，而不是在原有路径上做微小优化。"
+      },
+      {
+        unitNo: 2,
+        unit: "第二单元：重构系统",
+        week: "第9周",
+        date: "2026-03-01",
+        displayDate: "3月1日",
+        title: "系统之美",
+        author: "德内拉·梅多斯",
+        summary: "以系统思维解释反馈回路、延迟、杠杆点和复杂行为，是理解组织、商业和社会问题的基础读物。"
+      },
+      {
+        unitNo: 3,
+        unit: "第三单元：开一家公司",
+        week: "第11周",
+        date: "2026-03-15",
+        displayDate: "3月15日",
+        title: "创业必经的那些事1",
+        author: "迈克尔·格伯",
+        summary: "围绕小企业常见困境，强调创始人要从亲自干活转向设计流程、岗位和可复制的经营系统。"
+      },
+      {
+        unitNo: 3,
+        unit: "第三单元：开一家公司",
+        week: "第12周",
+        date: "2026-03-22",
+        displayDate: "3月22日",
+        title: "随时卖掉你的公司",
+        author: "约翰·沃里洛",
+        summary: "用商业寓言讲解如何把依赖创始人的服务型业务，改造成更标准化、更有出售价值的公司。"
+      },
+      {
+        unitNo: 3,
+        unit: "第三单元：开一家公司",
+        week: "第13周",
+        date: "2026-03-29",
+        displayDate: "3月29日",
+        title: "聘谁：用A级招聘法找到最合适的人",
+        author: "杰夫·斯马特",
+        summary: "提供结构化招聘方法，从岗位记分卡、筛选面试到推荐人核查，降低关键岗位误聘概率。"
+      },
+      {
+        unitNo: 3,
+        unit: "第三单元：开一家公司",
+        week: "第14周",
+        date: "2026-04-05",
+        displayDate: "4月5日",
+        title: "用系统来工作",
+        author: "萨姆·卡彭特",
+        summary: "讲述通过记录、优化和授权业务流程来减少混乱，让公司从个人英雄模式转向稳定运转。"
+      },
+      {
+        unitNo: 4,
+        unit: "第四单元：找到工作方式",
+        week: "第16周",
+        date: "2026-04-19",
+        displayDate: "4月19日",
+        title: "精力管理",
+        author: "吉姆·洛尔",
+        summary: "把高绩效视为体能、情绪、专注和意义的综合管理，强调恢复节奏比单纯时间管理更关键。"
+      },
+      {
+        unitNo: 4,
+        unit: "第四单元：找到工作方式",
+        week: "第17周",
+        date: "2026-04-26",
+        displayDate: "4月26日",
+        title: "思考的技术",
+        author: "大前研一",
+        summary: "围绕商业问题拆解、假设验证和逻辑表达，训练从现象进入本质的咨询式思考方式。"
+      },
+      {
+        unitNo: 4,
+        unit: "第四单元：找到工作方式",
+        week: "第18周",
+        date: "2026-05-03",
+        displayDate: "5月3日",
+        title: "格鲁夫给经理人的第一课",
+        author: "安德鲁·格鲁夫",
+        summary: "英特尔前 CEO 的管理手册，涵盖产出导向、会议、一对一、决策和团队杠杆等经理基本功。"
+      },
+      {
+        unitNo: 4,
+        unit: "第四单元：找到工作方式",
+        week: "第19周",
+        date: "2026-05-10",
+        displayDate: "5月10日",
+        title: "深度工作",
+        author: "卡尔·纽波特",
+        summary: "说明高价值创造依赖长时间无干扰专注，并给出减少浅层事务、训练注意力的方法。"
+      },
+      {
+        unitNo: 5,
+        unit: "第五单元：领会战略",
+        week: "第21周",
+        date: "2026-05-24",
+        displayDate: "5月24日",
+        title: "战略7力",
+        author: "汉密尔顿·海默",
+        summary: "提出规模经济、网络效应、反定位、转换成本、品牌、垄断资源和流程力等战略护城河框架。"
+      },
+      {
+        unitNo: 5,
+        unit: "第五单元：领会战略",
+        week: "第22周",
+        date: "2026-05-31",
+        displayDate: "5月31日",
+        title: "从0到1",
+        author: "彼得·蒂尔",
+        summary: "强调创业应追求从无到有的独特创新，围绕垄断、秘密、技术趋势和创始团队展开。"
+      },
+      {
+        unitNo: 5,
+        unit: "第五单元：领会战略",
+        week: "第23周",
+        date: "2026-06-07",
+        displayDate: "6月7日",
+        title: "影响力",
+        author: "罗伯特·西奥迪尼",
+        summary: "系统梳理互惠、承诺一致、社会认同、喜好、权威和稀缺等说服原则，是行为营销经典。"
+      },
+      {
+        unitNo: 5,
+        unit: "第五单元：领会战略",
+        week: "第24周",
+        date: "2026-06-14",
+        displayDate: "6月14日",
+        title: "掌控谈话",
+        author: "克里斯·沃斯",
+        summary: "前 FBI 谈判专家总结镜像、标注情绪、校准问题等方法，用于商业谈判和高压沟通。"
+      },
+      {
+        unitNo: 6,
+        unit: "第六单元：叙事的力量",
+        week: "第26周",
+        date: "2026-06-28",
+        displayDate: "6月28日",
+        title: "故事",
+        author: "罗伯特·麦基",
+        summary: "面向编剧和创作者的叙事经典，讲解结构、冲突、人物弧光和场景设计如何支撑好故事。"
+      },
+      {
+        unitNo: 6,
+        unit: "第六单元：叙事的力量",
+        week: "第27周",
+        date: "2026-07-05",
+        displayDate: "7月5日",
+        title: "纪录片也要讲故事",
+        author: "希拉·柯伦·伯纳德",
+        summary: "讲解纪录片如何在真实材料中建立角色、冲突、结构和观点，兼顾事实伦理与叙事张力。"
+      },
+      {
+        unitNo: 6,
+        unit: "第六单元：叙事的力量",
+        week: "第28周",
+        date: "2026-07-12",
+        displayDate: "7月12日",
+        title: "提问的艺术：为什么你该这样问",
+        author: "安德鲁·索贝尔",
+        summary: "聚焦高质量提问在咨询、销售、领导和关系中的作用，帮助把对话从信息交换推进到洞察产生。"
+      },
+      {
+        unitNo: 6,
+        unit: "第六单元：叙事的力量",
+        week: "第29周",
+        date: "2026-07-19",
+        displayDate: "7月19日",
+        title: "鞋狗",
+        author: "菲尔·奈特",
+        summary: "耐克创始人的创业回忆录，记录从代理跑鞋到全球品牌的融资、供应链、团队和信念考验。"
+      },
+      {
+        unitNo: 7,
+        unit: "第七单元：更高维看",
+        week: "第31周",
+        date: "2026-08-02",
+        displayDate: "8月2日",
+        title: "制造消费者",
+        author: "安东尼·加卢佐",
+        summary: "追溯现代消费社会的形成，讨论广告、品牌、零售和文化如何共同塑造消费者身份。"
+      },
+      {
+        unitNo: 7,
+        unit: "第七单元：更高维看",
+        week: "第32周",
+        date: "2026-08-09",
+        displayDate: "8月9日",
+        title: "分析与思考：黄奇帆的复旦经济课",
+        author: "黄奇帆",
+        summary: "以宏观经济、产业、金融和城市治理为线索，展示政策制定者分析复杂经济问题的方法。"
+      },
+      {
+        unitNo: 7,
+        unit: "第七单元：更高维看",
+        week: "第33周",
+        date: "2026-08-16",
+        displayDate: "8月16日",
+        title: "双重冲击",
+        author: "李晓",
+        summary: "围绕全球变局与中国经济转型展开，分析外部秩序变化和内部结构调整带来的双重压力。"
+      },
+      {
+        unitNo: 7,
+        unit: "第七单元：更高维看",
+        week: "第34周",
+        date: "2026-08-23",
+        displayDate: "8月23日",
+        title: "读，写，拥有",
+        author: "克里斯·迪克森",
+        summary: "从互联网所有权演化切入，解释区块链和网络激励如何改变创作者、平台与用户之间的关系。"
+      },
+      {
+        unitNo: 8,
+        unit: "第八单元：伟大的故事",
+        week: "第36周",
+        date: "2026-09-06",
+        displayDate: "9月6日",
+        title: "史蒂夫·乔布斯传",
+        author: "沃尔特·艾萨克森",
+        summary: "基于大量访谈写成的乔布斯传记，呈现其产品直觉、管理风格、审美追求和复杂个性。"
+      },
+      {
+        unitNo: 8,
+        unit: "第八单元：伟大的故事",
+        week: "第37周",
+        date: "2026-09-13",
+        displayDate: "9月13日",
+        title: "创新者",
+        author: "沃尔特·艾萨克森",
+        summary: "梳理计算机和互联网革命中的关键人物，强调创新通常来自团队协作、跨学科和持续迭代。"
+      },
+      {
+        unitNo: 8,
+        unit: "第八单元：伟大的故事",
+        week: "第38周",
+        date: "2026-09-20",
+        displayDate: "9月20日",
+        title: "一生的旅程",
+        author: "罗伯特·艾格",
+        summary: "迪士尼前 CEO 的管理回忆录，围绕并购、品牌、创意人才和领导者品格展开。"
+      },
+      {
+        unitNo: 8,
+        unit: "第八单元：伟大的故事",
+        week: "第39周",
+        date: "2026-09-27",
+        displayDate: "9月27日",
+        title: "原则：应对变化中的世界秩序",
+        author: "瑞·达利欧",
+        summary: "从历史周期观察大国兴衰、债务、货币和地缘政治，提供理解世界秩序变化的宏观框架。"
+      },
+      {
+        unitNo: 9,
+        unit: "第九单元：成为管理者",
+        week: "第41周",
+        date: "2026-10-11",
+        displayDate: "10月11日",
+        title: "小而美：持续盈利的经营法则",
+        author: "萨希尔·拉文格亚",
+        summary: "Gumroad 创始人反思增长神话，主张以盈利、简单和长期可持续为中心经营小型公司。"
+      },
+      {
+        unitNo: 9,
+        unit: "第九单元：成为管理者",
+        week: "第42周",
+        date: "2026-10-18",
+        displayDate: "10月18日",
+        title: "管理的实践",
+        author: "彼得·德鲁克",
+        summary: "现代管理学经典，讨论企业目的、目标管理、组织结构、管理者责任和知识工作者。"
+      },
+      {
+        unitNo: 9,
+        unit: "第九单元：成为管理者",
+        week: "第43周",
+        date: "2026-10-25",
+        displayDate: "10月25日",
+        title: "反脆弱",
+        author: "纳西姆·塔勒布",
+        summary: "提出反脆弱概念：某些系统不仅能承受波动，还能从冲击、压力和不确定性中受益。"
+      },
+      {
+        unitNo: 9,
+        unit: "第九单元：成为管理者",
+        week: "第44周",
+        date: "2026-11-01",
+        displayDate: "11月1日",
+        title: "卓有成效的管理者",
+        author: "彼得·德鲁克",
+        summary: "聚焦管理者自我管理：时间、贡献、优势、优先级和有效决策，是知识工作者的基本训练。"
+      },
+      {
+        unitNo: 10,
+        unit: "第十单元：无限游戏",
+        week: "第46周",
+        date: "2026-11-15",
+        displayDate: "11月15日",
+        title: "穷查理宝典",
+        author: "查理·芒格",
+        summary: "收录芒格演讲与思维模型，强调跨学科常识、逆向思维、耐心和避免重大错误。"
+      },
+      {
+        unitNo: 10,
+        unit: "第十单元：无限游戏",
+        week: "第47周",
+        date: "2026-11-22",
+        displayDate: "11月22日",
+        title: "有限与无限的游戏",
+        author: "詹姆斯·卡斯",
+        summary: "用有限游戏与无限游戏区分输赢型目标和持续参与型人生，启发组织、战略和生命意义思考。"
+      },
+      {
+        unitNo: 10,
+        unit: "第十单元：无限游戏",
+        week: "第48周",
+        date: "2026-11-29",
+        displayDate: "11月29日",
+        title: "干法",
+        author: "稻盛和夫",
+        summary: "稻盛和夫关于工作观、经营哲学和个人修炼的短论，强调热爱工作、利他和持续精进。"
+      },
+      {
+        unitNo: 10,
+        unit: "第十单元：无限游戏",
+        week: "第49周",
+        date: "2026-12-06",
+        displayDate: "12月6日",
+        title: "赚钱的艺术",
+        author: "蔡澜",
+        summary: "以轻松笔法谈工作、商业、人情与生活选择，呈现一种务实又带个人趣味的赚钱观。"
+      }
+    ];
+
+    const unitFilter = document.querySelector("#unitFilter");
+    const searchInput = document.querySelector("#searchInput");
+    const bookRows = document.querySelector("#bookRows");
+    const emptyState = document.querySelector("#emptyState");
+    const resultCount = document.querySelector("#resultCount");
+    const bookTotal = document.querySelector("#bookTotal");
+    const navCount = document.querySelector("#navCount");
+
+    const uniqueUnits = [...new Map(books.map((book) => [book.unit, book])).values()];
+
+    uniqueUnits.forEach((book) => {
+      const option = document.createElement("option");
+      option.value = book.unit;
+      option.textContent = book.unit;
+      unitFilter.appendChild(option);
+    });
+
+    bookTotal.textContent = books.length;
+    navCount.textContent = `${books.length} 本书`;
+
+    function makeLinks(book) {
+      const query = `${book.title} ${book.author}`;
+      const reviewQuery = `"${book.title}" ${book.author} 书评 介绍`;
+      return [
+        ["豆瓣", `https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(query)}`],
+        ["微信读书", `https://weread.qq.com/web/search/books?keyword=${encodeURIComponent(query)}`],
+        ["书评检索", `https://www.google.com/search?q=${encodeURIComponent(reviewQuery)}`]
+      ];
+    }
+
+    function render() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const unitValue = unitFilter.value;
+      const filtered = books.filter((book) => {
+        const haystack = `${book.unit} ${book.week} ${book.displayDate} ${book.title} ${book.author} ${book.summary}`.toLowerCase();
+        const matchKeyword = !keyword || haystack.includes(keyword);
+        const matchUnit = unitValue === "all" || book.unit === unitValue;
+        return matchKeyword && matchUnit;
+      });
+
+      bookRows.innerHTML = filtered.map((book) => {
+        const links = makeLinks(book).map(([label, url]) => (
+          `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`
+        )).join("");
+
+        return `
+          <tr>
+            <td class="unit u${book.unitNo}">${book.unit}</td>
+            <td class="week">${book.week}</td>
+            <td class="date"><time datetime="${book.date}">${book.displayDate}</time></td>
+            <td><span class="book-title">《${book.title}》</span></td>
+            <td class="author">${book.author}</td>
+            <td class="summary">${book.summary}</td>
+            <td class="links"><div class="link-row">${links}</div></td>
+          </tr>
+        `;
+      }).join("");
+
+      resultCount.textContent = `${filtered.length} 本`;
+      emptyState.hidden = filtered.length !== 0;
+    }
+
+    searchInput.addEventListener("input", render);
+    unitFilter.addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>
