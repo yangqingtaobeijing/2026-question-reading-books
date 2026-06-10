@@ -94,12 +94,9 @@
     }
 
     .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
-      gap: 30px;
-      align-items: end;
+      display: block;
       padding: 44px 0 28px;
-      min-height: 360px;
+      min-height: 320px;
     }
 
     h1 {
@@ -145,38 +142,6 @@
       margin-top: 8px;
       color: var(--muted);
       font-size: 13px;
-    }
-
-    .source {
-      position: relative;
-      align-self: stretch;
-      min-height: 330px;
-      border: 1px solid var(--black);
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--black);
-      box-shadow: var(--shadow);
-    }
-
-    .source img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: top center;
-      filter: saturate(.98) contrast(1.02);
-      transform: scale(1.01);
-    }
-
-    .source-label {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      background: rgba(255, 253, 248, .92);
-      color: var(--black);
-      font-size: 13px;
-      font-weight: 800;
     }
 
     .controls {
@@ -381,12 +346,7 @@
       }
 
       .hero {
-        grid-template-columns: 1fr;
         padding-top: 30px;
-      }
-
-      .source {
-        max-height: 460px;
       }
 
       .controls {
@@ -444,10 +404,6 @@
           <div class="stat"><strong>2026</strong><span>1 月至 12 月</span></div>
         </div>
       </div>
-      <figure class="source">
-        <img src="assets/source-reading-list.png" alt="原始图片中的 2026 提问式阅读共读书目">
-        <figcaption class="source-label">原图对照</figcaption>
-      </figure>
     </section>
 
     <section id="book-table" aria-label="书目表格">
